@@ -1,5 +1,5 @@
-homepage: "https://github.com/Know-That-Ai/agentshield-gtm-template"
+homepage: "https://github.com/Know-That-Ai/checkpoint-gtm-template"
 documentation: "https://kya.vouched.id/docs/quick-start#google-tag-manager-quick-start"
 versions:
-  - sha: c968b21148975b683b48e9b00e36155a80a34864
-    changeNotes: Initial release of AgentShield GTM template for AI agent detection
+  - sha: b7e075648d3588ef6c7b638c02bfc8c81491e8a9
+    changeNotes: "Checkpoint: updated tag name, brand icon, and description (formerly AgentShield)"

@@ -1,6 +1,6 @@
-# AgentShield Google Tag Manager Template
+# Checkpoint Google Tag Manager Template
 
-This repository contains the official Google Tag Manager (GTM) template for AgentShield, an AI agent detection service that protects websites from automated bot traffic.
+This repository contains the official Google Tag Manager (GTM) template for Checkpoint, the AI agent identity & protection platform from [KnowThat.ai](https://kya.vouched.id). It detects and identifies AI agents and automated bot traffic accessing your website.
 
 ## Quick Installation
 
@@ -16,7 +16,7 @@ This repository contains the official Google Tag Manager (GTM) template for Agen
 
 1. In GTM, go to **Templates** → **Tag Templates**
 2. Click **Search Gallery**
-3. Search for "AgentShield"
+3. Search for "Checkpoint"
 4. Click **Add to Workspace**
 
 ## Creating a Tag
@@ -25,9 +25,9 @@ After importing the template:
 
 1. Go to **Tags** → **New**
 2. Click **Tag Configuration**
-3. Select **AgentShield Pixel** from Custom templates
+3. Select **Checkpoint Pixel** from Custom templates
 4. Configure the required settings:
-   - **Project ID**: Your AgentShield project ID (required)
+   - **Project ID**: Your Checkpoint project ID (required)
    - **API Endpoint**: Custom endpoint URL (optional)
    - **Debug Mode**: Enable for testing (optional)
    - **Session Timeout**: Session duration in milliseconds (default: 1800000)
@@ -40,7 +40,7 @@ After importing the template:
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| Project ID | Text | Yes | - | Your AgentShield project identifier |
+| Project ID | Text | Yes | - | Your Checkpoint project identifier |
 | API Endpoint | Text | No | Auto-detected | Custom API endpoint URL |
 | Debug Mode | Checkbox | No | false | Enable console debugging |
 | Session Timeout | Number | No | 1800000 | Session timeout in milliseconds |
@@ -61,9 +61,9 @@ Configure triggers based on your needs:
 ## Testing Your Installation
 
 1. Use GTM's **Preview** mode
-2. Check the browser console for AgentShield debug messages
-3. Verify events are being sent to AgentShield
-4. Monitor the AgentShield dashboard for activity
+2. Check the browser console for Checkpoint debug messages
+3. Verify events are being sent to Checkpoint
+4. Monitor the Checkpoint dashboard for activity
 
 ## Troubleshooting
 
@@ -72,7 +72,7 @@ Configure triggers based on your needs:
 - Check that all required parameters are configured
 - Verify your GTM container is published
 
-### No Data in AgentShield Dashboard
+### No Data in Checkpoint Dashboard
 - Confirm your Project ID is correct
 - Check that triggers are firing
 - Enable debug mode to see console logs
@@ -81,14 +81,14 @@ Configure triggers based on your needs:
 ### JavaScript Errors
 - Check browser console for error messages
 - Ensure no ad blockers are interfering
-- Verify Content Security Policy allows AgentShield domains
+- Verify Content Security Policy allows Checkpoint domains
 
 ## Support
 
 For questions or issues:
 
 - **Documentation**: [https://kya.vouched.id/docs](https://kya.vouched.id/docs)
-- **GitHub Issues**: [Report template issues here](https://github.com/Know-That-Ai/agentshield-gtm-template/issues)
+- **GitHub Issues**: [Report template issues here](https://github.com/Know-That-Ai/checkpoint-gtm-template/issues)
 
 ## License
 
@@ -100,4 +100,4 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 ---
 
-**Note**: This template requires an active AgentShield account. Get started at [https://kya.vouched.id](https://kya.vouched.id).
+**Note**: This template requires an active Checkpoint account. Get started at [https://kya.vouched.id](https://kya.vouched.id).
