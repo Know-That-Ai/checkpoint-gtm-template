@@ -88,7 +88,7 @@ Configure triggers based on your needs:
 For questions or issues:
 
 - **Documentation**: [https://kya.vouched.id/docs](https://kya.vouched.id/docs)
-- **GitHub Issues**: [Report template issues here](https://github.com/Know-That-Ai/agentshield-gtm-template/issues)
+- **GitHub Issues**: [Report template issues here](https://github.com/Know-That-Ai/checkpoint-gtm-template/issues)
 
 ## License
 
