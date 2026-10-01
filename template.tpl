@@ -43,75 +43,11 @@ ___TEMPLATE_PARAMETERS___
     "help": "Your Checkpoint project ID. You can find this in your Checkpoint dashboard."
   },
   {
-    "type": "TEXT",
-    "name": "apiEndpoint",
-    "displayName": "API Endpoint (Optional)",
-    "simpleValueType": true,
-    "help": "Custom API endpoint URL. Leave blank to use the default endpoint."
-  },
-  {
     "type": "CHECKBOX",
     "name": "debugMode",
     "checkboxText": "Enable Debug Mode",
     "simpleValueType": true,
-    "help": "Enable debug logging in browser console. Recommended for testing only."
-  },
-  {
-    "type": "TEXT",
-    "name": "sessionTimeout",
-    "displayName": "Session Timeout (ms)",
-    "simpleValueType": true,
-    "help": "Session timeout in milliseconds. Default is 1800000 (30 minutes).",
-    "defaultValue": 1800000,
-    "valueValidators": [
-      {
-        "type": "POSITIVE_NUMBER"
-      }
-    ]
-  },
-  {
-    "type": "CHECKBOX",
-    "name": "respectDoNotTrack",
-    "checkboxText": "Respect Do Not Track",
-    "simpleValueType": true,
-    "help": "Respect user's Do Not Track browser setting.",
-    "defaultValue": "checked",
-    "displayName": "Respect Do Not Track"
-  },
-  {
-    "type": "TEXT",
-    "name": "batchSize",
-    "displayName": "Batch Size",
-    "simpleValueType": true,
-    "defaultValue": 10,
-    "valueValidators": [
-      {
-        "type": "POSITIVE_NUMBER"
-      }
-    ],
-    "help": "Number of events to batch before sending. Default is 10."
-  },
-  {
-    "type": "TEXT",
-    "name": "flushInterval",
-    "displayName": "Flush Interval (ms)",
-    "simpleValueType": true,
-    "help": "How often to flush batched events in milliseconds. Default is 5000 (5 seconds).",
-    "defaultValue": 5000,
-    "valueValidators": [
-      {
-        "type": "POSITIVE_NUMBER"
-      }
-    ]
-  },
-  {
-    "type": "CHECKBOX",
-    "name": "enableFingerprinting",
-    "checkboxText": "Enable Fingerprinting",
-    "simpleValueType": true,
-    "help": "Enable advanced browser fingerprinting for better detection accuracy.",
-    "displayName": "Enable Fingerprinting",
-    "defaultValue": "checked"
+    "help": "Logs this tag's steps to the browser console in GTM Preview mode. It doesn't turn on the Pixel's own debug logging, which the Pixel reads only from a data-debug attribute that this template can't set."
   }
 ]
 
@@ -120,32 +56,21 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const log = require('logToConsole');
 const injectScript = require('injectScript');
-const setInWindow = require('setInWindow');
 const encodeUriComponent = require('encodeUriComponent');
-const makeInteger = require('makeInteger');
+const queryPermission = require('queryPermission');
 
-// Get template parameters with proper type conversion
-const projectId = data.projectId;
-const apiEndpoint = data.apiEndpoint || '';
+// The Pixel loader reads its Project ID from a data-project-id attribute on its
+// script tag or, without one, from the project-id query parameter of the script
+// URL. The documented injectScript API takes only a URL, so the Project ID goes
+// in the query parameter. The loader reads every other option only from data-*
+// attributes, which is why this template has no fields for them.
+const projectId = typeof data.projectId === 'string' ? data.projectId.trim() : '';
 const debugMode = data.debugMode === true;
-const sessionTimeout = makeInteger(data.sessionTimeout) || 1800000;
-const respectDoNotTrack = data.respectDoNotTrack !== false;
-const batchSize = makeInteger(data.batchSize) || 10;
-const flushInterval = makeInteger(data.flushInterval) || 5000;
-const enableFingerprinting = data.enableFingerprinting !== false;
 
 // Log initialization if debug mode is enabled
 if (debugMode) {
   log('Checkpoint GTM Template - Starting initialization');
-  log('Configuration:', {
-    projectId: projectId,
-    apiEndpoint: apiEndpoint || 'default',
-    sessionTimeout: sessionTimeout,
-    respectDoNotTrack: respectDoNotTrack,
-    batchSize: batchSize,
-    flushInterval: flushInterval,
-    enableFingerprinting: enableFingerprinting
-  });
+  log('Project ID:', projectId);
 }
 
 // Validate required fields
@@ -154,34 +79,19 @@ if (!projectId) {
   return data.gtmOnFailure();
 }
 
-// Set configuration in window object for the script to read
-setInWindow('_agentShieldConfig', {
-  projectId: projectId,
-  apiEndpoint: apiEndpoint,
-  debug: debugMode,
-  sessionTimeout: sessionTimeout,
-  respectDoNotTrack: respectDoNotTrack,
-  batchSize: batchSize,
-  flushInterval: flushInterval,
-  enableFingerprinting: enableFingerprinting
-}, true);
-
-// Build the script URL with query parameters
-const baseUrl = 'https://kya.vouched.id/pixel.js';
-let scriptUrl = baseUrl + '?project_id=' + encodeUriComponent(projectId);
-
-// Add optional parameters to URL
-if (apiEndpoint) {
-  scriptUrl += '&api_endpoint=' + encodeUriComponent(apiEndpoint);
+// encodeUriComponent returns undefined for input it cannot encode
+const encodedProjectId = encodeUriComponent(projectId);
+if (!encodedProjectId) {
+  log('Checkpoint Error: Project ID could not be URL-encoded');
+  return data.gtmOnFailure();
 }
-if (debugMode) {
-  scriptUrl += '&debug=true';
+
+const scriptUrl = 'https://kya.vouched.id/pixel.js?project-id=' + encodedProjectId;
+
+if (!queryPermission('inject_script', scriptUrl)) {
+  log('Checkpoint Error: Script URL is not allowed by the inject_script permission:', scriptUrl);
+  return data.gtmOnFailure();
 }
-scriptUrl += '&session_timeout=' + sessionTimeout;
-scriptUrl += '&respect_dnt=' + respectDoNotTrack;
-scriptUrl += '&batch_size=' + batchSize;
-scriptUrl += '&flush_interval=' + flushInterval;
-scriptUrl += '&enable_fingerprinting=' + enableFingerprinting;
 
 // Success callback
 const onSuccess = function() {
@@ -215,67 +125,6 @@ ___WEB_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "access_globals",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "keys",
-          "value": {
-            "type": 2,
-            "listItem": [
-              {
-                "type": 3,
-                "mapKey": [
-                  {
-                    "type": 1,
-                    "string": "key"
-                  },
-                  {
-                    "type": 1,
-                    "string": "read"
-                  },
-                  {
-                    "type": 1,
-                    "string": "write"
-                  },
-                  {
-                    "type": 1,
-                    "string": "execute"
-                  }
-                ],
-                "mapValue": [
-                  {
-                    "type": 1,
-                    "string": "_agentShieldConfig"
-                  },
-                  {
-                    "type": 8,
-                    "boolean": true
-                  },
-                  {
-                    "type": 8,
-                    "boolean": true
-                  },
-                  {
-                    "type": 8,
-                    "boolean": false
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": true
-  },
-  {
-    "instance": {
-      "key": {
         "publicId": "logging",
         "versionId": "1"
       },
@@ -305,7 +154,7 @@ ___WEB_PERMISSIONS___
             "listItem": [
               {
                 "type": 1,
-                "string": "https://kya.vouched.id/*"
+                "string": "https://kya.vouched.id/pixel.js?project-id=*"
               }
             ]
           }
@@ -322,7 +171,131 @@ ___WEB_PERMISSIONS___
 
 ___TESTS___
 
-scenarios: []
+scenarios:
+- name: Injects the Pixel with the Project ID in the project-id query parameter
+  code: |-
+    const injected = [];
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      injected.push(url);
+      onSuccess();
+    });
+
+    runCode({projectId: PROJECT_ID});
+
+    // queryPermission is not mocked, so this URL also passed the template's own
+    // check against its inject_script permission.
+    assertThat(injected).isEqualTo([PIXEL_URL]);
+    assertApi('gtmOnSuccess').wasCalled();
+    assertApi('gtmOnFailure').wasNotCalled();
+- name: URL-encodes the Project ID as a single query value
+  code: |-
+    const injected = [];
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      injected.push(url);
+      onSuccess();
+    });
+
+    runCode({projectId: 'a b&c=d/e?f#g+h'});
+
+    assertThat(injected).isEqualTo(['https://kya.vouched.id/pixel.js?project-id=a%20b%26c%3Dd%2Fe%3Ff%23g%2Bh']);
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Trims whitespace around the Project ID
+  code: |-
+    const injected = [];
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      injected.push(url);
+      onSuccess();
+    });
+
+    runCode({projectId: '  ' + PROJECT_ID + '  '});
+
+    assertThat(injected).isEqualTo([PIXEL_URL]);
+- name: Fails without injecting when the Project ID is empty
+  code: |-
+    runCode({projectId: ''});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('logToConsole').wasCalledWith('Checkpoint Error: Project ID is required');
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Fails without injecting when the Project ID is missing
+  code: |-
+    runCode({});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Fails without injecting when the Project ID is only whitespace
+  code: |-
+    runCode({projectId: '   '});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Fails without injecting when the Project ID is not a string
+  code: |-
+    runCode({projectId: 12345});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Fails without injecting when the Project ID cannot be URL-encoded
+  code: |-
+    // encodeUriComponent returns undefined for input it cannot encode, such as a
+    // lone surrogate.
+    mock('encodeUriComponent', function(value) {
+      return undefined;
+    });
+
+    runCode({projectId: PROJECT_ID});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Fails without injecting when the script URL is not permitted
+  code: |-
+    mock('queryPermission', function(permission, url) {
+      return false;
+    });
+
+    runCode({projectId: PROJECT_ID});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Calls gtmOnFailure when the Pixel script fails to load
+  code: |-
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      onFailure();
+    });
+
+    runCode({projectId: PROJECT_ID});
+
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Debug Mode logs the injected script URL
+  code: |-
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      onSuccess();
+    });
+
+    runCode({projectId: PROJECT_ID, debugMode: true});
+
+    assertApi('logToConsole').wasCalledWith('Checkpoint GTM Template - Injecting script from:', PIXEL_URL);
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Logs nothing on success when Debug Mode is off
+  code: |-
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      onSuccess();
+    });
+
+    runCode({projectId: PROJECT_ID, debugMode: false});
+
+    assertApi('logToConsole').wasNotCalled();
+    assertApi('gtmOnSuccess').wasCalled();
+setup: |-
+  const PROJECT_ID = '6f1c2b8e-3d4a-4f5b-9c6d-7e8f9a0b1c2d';
+  const PIXEL_URL = 'https://kya.vouched.id/pixel.js?project-id=' + PROJECT_ID;
 
 
 ___NOTES___

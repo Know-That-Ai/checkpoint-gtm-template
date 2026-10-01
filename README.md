@@ -28,26 +28,18 @@ After importing the template:
 3. Select **Checkpoint Pixel** from Custom templates
 4. Configure the required settings:
    - **Project ID**: Your Checkpoint project ID (required)
-   - **API Endpoint**: Custom endpoint URL (optional)
-   - **Debug Mode**: Enable for testing (optional)
-   - **Session Timeout**: Session duration in milliseconds (default: 1800000)
-   - **Respect Do Not Track**: Honor user DNT preference (default: true)
-   - **Batch Size**: Events per batch (default: 10)
-   - **Flush Interval**: Batch flush frequency in ms (default: 5000)
-   - **Enable Fingerprinting**: Advanced detection (default: true)
+   - **Debug Mode**: Log this tag's steps to the browser console in GTM Preview mode (optional)
 
 ## Configuration Parameters
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | Project ID | Text | Yes | - | Your Checkpoint project identifier |
-| API Endpoint | Text | No | Auto-detected | Custom API endpoint URL |
-| Debug Mode | Checkbox | No | false | Enable console debugging |
-| Session Timeout | Number | No | 1800000 | Session timeout in milliseconds |
-| Respect Do Not Track | Checkbox | No | true | Honor browser DNT setting |
-| Batch Size | Number | No | 10 | Number of events per batch |
-| Flush Interval | Number | No | 5000 | Batch flush interval in ms |
-| Enable Fingerprinting | Checkbox | No | true | Advanced browser detection |
+| Debug Mode | Checkbox | No | false | Logs this tag's steps to the browser console in GTM Preview mode |
+
+The tag loads `https://kya.vouched.id/pixel.js?project-id=<your Project ID>`. The Pixel reads every other option only from `data-*` attributes on its script tag, which this template can't set, so the Pixel runs with its defaults: it honors Do Not Track, loads its fingerprinting detector, and sends events to `https://kya.vouched.id/api/v1/pixel`. Debug Mode logs only this tag's steps; it doesn't turn on the Pixel's own `data-debug` logging.
+
+To change any Pixel option (API endpoint, session timeout, Do Not Track, fingerprinting, consent gating, IP anonymization, URL redaction, or the Pixel's debug logging), use a GTM **Custom HTML** tag instead and set the matching [`data-*` attribute](https://kya.vouched.id/docs/detect/pixel#configuration) on the script tag.
 
 ## Setting Up Triggers
 
