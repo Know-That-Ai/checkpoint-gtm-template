@@ -1,6 +1,6 @@
 # Checkpoint Google Tag Manager Template
 
-This repository contains the official Google Tag Manager (GTM) template for Checkpoint, the AI agent identity & protection platform from [KnowThat.ai](https://kya.vouched.id). It detects and identifies AI agents and automated bot traffic accessing your website.
+This repository contains the official Google Tag Manager (GTM) template for the Checkpoint Pixel. The Pixel is part of [Checkpoint](https://kya.vouched.id), the AI agent identity & protection platform built by Vouched. It detects and identifies AI agents and automated bot traffic accessing your website.
 
 ## Quick Installation
 
@@ -12,12 +12,14 @@ This repository contains the official Google Tag Manager (GTM) template for Chec
 4. Select the downloaded `template.tpl` file
 5. Save the template
 
-### Method 2: Community Template Gallery (Coming Soon)
+### Method 2: Community Template Gallery
 
 1. In GTM, go to **Templates** → **Tag Templates**
 2. Click **Search Gallery**
 3. Search for "Checkpoint"
 4. Click **Add to Workspace**
+
+The gallery serves the newest version listed in [`metadata.yaml`](metadata.yaml), so it can trail the `template.tpl` in this repository.
 
 ## Creating a Tag
 
