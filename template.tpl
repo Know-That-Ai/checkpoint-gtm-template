@@ -43,11 +43,27 @@ ___TEMPLATE_PARAMETERS___
     "help": "Your Checkpoint project ID. You can find this in your Checkpoint dashboard."
   },
   {
+    "type": "TEXT",
+    "name": "apiEndpoint",
+    "displayName": "API Endpoint (Optional)",
+    "simpleValueType": true,
+    "help": "Leave this empty (or set it to the default, https://kya.vouched.id/api/v1/pixel) and the Pixel sends events to its default endpoint. This template can't change the endpoint, so any other value stops the tag without loading the Pixel. To use your own endpoint, use a Custom HTML tag with a data-api-endpoint attribute."
+  },
+  {
     "type": "CHECKBOX",
     "name": "debugMode",
     "checkboxText": "Enable Debug Mode",
     "simpleValueType": true,
     "help": "Logs this tag's steps to the browser console in GTM Preview mode. It doesn't turn on the Pixel's own debug logging, which the Pixel reads only from a data-debug attribute that this template can't set."
+  },
+  {
+    "type": "CHECKBOX",
+    "name": "enableFingerprinting",
+    "checkboxText": "Enable Fingerprinting",
+    "simpleValueType": true,
+    "help": "Leave this checked and the Pixel runs with its fingerprinting detector on, which is its default. This template can't turn fingerprinting off, so unchecking this stops the tag without loading the Pixel. To run the Pixel without fingerprinting, use a Custom HTML tag with data-enable-fingerprinting=\"false\".",
+    "displayName": "Enable Fingerprinting",
+    "defaultValue": true
   }
 ]
 
@@ -63,9 +79,16 @@ const queryPermission = require('queryPermission');
 // script tag or, without one, from the project-id query parameter of the script
 // URL. The documented injectScript API takes only a URL, so the Project ID goes
 // in the query parameter. The loader reads every other option only from data-*
-// attributes, which is why this template has no fields for them.
+// attributes, so this template can't pass any of them. When a field asks for
+// something other than the Pixel's default (fingerprinting off, another
+// endpoint), the tag fails instead of running the Pixel against that choice.
+const DEFAULT_API_ENDPOINT = 'https://kya.vouched.id/api/v1/pixel';
+
 const projectId = typeof data.projectId === 'string' ? data.projectId.trim() : '';
+const apiEndpoint = typeof data.apiEndpoint === 'string' ? data.apiEndpoint.trim() : data.apiEndpoint;
 const debugMode = data.debugMode === true;
+const fingerprintingOff = data.enableFingerprinting === false;
+const customEndpoint = !!apiEndpoint && apiEndpoint !== DEFAULT_API_ENDPOINT;
 
 // Log initialization if debug mode is enabled
 if (debugMode) {
@@ -76,6 +99,16 @@ if (debugMode) {
 // Validate required fields
 if (!projectId) {
   log('Checkpoint Error: Project ID is required');
+  return data.gtmOnFailure();
+}
+
+// The Pixel would ignore these choices and run with its defaults
+if (fingerprintingOff) {
+  log('Checkpoint Error: This template cannot turn fingerprinting off; use the Custom HTML tag with data-enable-fingerprinting="false"');
+  return data.gtmOnFailure();
+}
+if (customEndpoint) {
+  log('Checkpoint Error: This template cannot set a custom API endpoint; use the Custom HTML tag with data-api-endpoint');
   return data.gtmOnFailure();
 }
 
@@ -210,6 +243,31 @@ scenarios:
     runCode({projectId: '  ' + PROJECT_ID + '  '});
 
     assertThat(injected).isEqualTo([PIXEL_URL]);
+- name: Injects normally with the default field values
+  code: |-
+    const injected = [];
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      injected.push(url);
+      onSuccess();
+    });
+
+    runCode({projectId: PROJECT_ID, apiEndpoint: '', debugMode: false, enableFingerprinting: true});
+
+    assertThat(injected).isEqualTo([PIXEL_URL]);
+    assertApi('gtmOnSuccess').wasCalled();
+    assertApi('gtmOnFailure').wasNotCalled();
+- name: Injects normally when API Endpoint is the Pixel default endpoint
+  code: |-
+    const injected = [];
+    mock('injectScript', function(url, onSuccess, onFailure) {
+      injected.push(url);
+      onSuccess();
+    });
+
+    runCode({projectId: PROJECT_ID, apiEndpoint: ' https://kya.vouched.id/api/v1/pixel ', enableFingerprinting: true});
+
+    assertThat(injected).isEqualTo([PIXEL_URL]);
+    assertApi('gtmOnSuccess').wasCalled();
 - name: Fails without injecting when the Project ID is empty
   code: |-
     runCode({projectId: ''});
@@ -237,6 +295,22 @@ scenarios:
     runCode({projectId: 12345});
 
     assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Fails closed without injecting when Enable Fingerprinting is unchecked
+  code: |-
+    runCode({projectId: PROJECT_ID, enableFingerprinting: false});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('logToConsole').wasCalledWith('Checkpoint Error: This template cannot turn fingerprinting off; use the Custom HTML tag with data-enable-fingerprinting="false"');
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: Fails closed without injecting when API Endpoint is a custom URL
+  code: |-
+    runCode({projectId: PROJECT_ID, apiEndpoint: 'https://collect.example.com/pixel', enableFingerprinting: true});
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('logToConsole').wasCalledWith('Checkpoint Error: This template cannot set a custom API endpoint; use the Custom HTML tag with data-api-endpoint');
     assertApi('gtmOnFailure').wasCalled();
     assertApi('gtmOnSuccess').wasNotCalled();
 - name: Fails without injecting when the Project ID cannot be URL-encoded
