@@ -1,5 +1,5 @@
 homepage: "https://github.com/Know-That-Ai/checkpoint-gtm-template"
-documentation: "https://kya.vouched.id/docs/quick-start#google-tag-manager-quick-start"
+documentation: "https://kya.vouched.id/docs/detect/pixel"
 versions:
   - sha: b7e075648d3588ef6c7b638c02bfc8c81491e8a9
     changeNotes: "Checkpoint: updated tag name, brand icon, and description (formerly AgentShield)"
