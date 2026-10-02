@@ -1,5 +1,7 @@
 homepage: "https://github.com/Know-That-Ai/checkpoint-gtm-template"
 documentation: "https://kya.vouched.id/docs/detect/pixel"
 versions:
+  - sha: 845c820c3f4f1833145d66a7c9e6a75f46bf0d52
+    changeNotes: "Sends the Project ID as ?project-id= so the Pixel starts. A tag with Enable Fingerprinting unchecked or a custom API Endpoint now fails instead of running; use a Custom HTML tag for those. Removes Session Timeout, Respect Do Not Track, Batch Size and Flush Interval, which the Pixel can't read from a template."
   - sha: b7e075648d3588ef6c7b638c02bfc8c81491e8a9
     changeNotes: "Checkpoint: updated tag name, brand icon, and description (formerly AgentShield)"
