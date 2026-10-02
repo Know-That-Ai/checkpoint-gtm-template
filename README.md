@@ -14,6 +14,8 @@ This repository contains the official Google Tag Manager (GTM) template for the 
 
 ### Method 2: Community Template Gallery
 
+The template is listed as [**Checkpoint Pixel**](https://tagmanager.google.com/gallery/#/owners/Know-That-Ai/templates/checkpoint-gtm-template) (publisher: Know-That-Ai).
+
 1. In GTM, go to **Templates** → **Tag Templates**
 2. Click **Search Gallery**
 3. Search for "Checkpoint"
